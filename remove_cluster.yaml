@@ -1,0 +1,70 @@
+---
+- hosts: workers
+  tasks:
+  - name: check if uninstall-script exists
+    stat:
+      path: "/usr/local/bin/k3s-agent-uninstall.sh"
+    register: uninstall_script
+
+  - name: run uninstall script
+    become: true
+    shell: "/usr/local/bin/k3s-agent-uninstall.sh"
+    when: uninstall_script.stat.exists
+
+  - name: get k3s pid
+    shell: "pgrep k3s"
+    register: k3s_pid
+    when: not uninstall_script.stat.exists
+
+  - name: kill k3s-process
+    shell: "kill {{ item }}"
+    with_items: "{{ k3s_pid.stdout_lines }}"
+    when: not uninstall_script.stat.exists
+
+  - wait_for:
+      path: "/proc/{{ item }}/status"
+      state: absent
+    with_items: "{{ k3s_pid.stdout_lines }}"
+    ignore_errors: true
+    register: killed_k3s
+    when: not uninstall_script.stat.exists
+
+  - name: force kill stuck processes
+    shell: "kill -9 {{ item }}"
+    with_items: "{{ killed_k3s.results | select('failed') | map(attribute='item') | list }}"
+    when: not uninstall_script.stat.exists
+
+- hosts: masters
+  tasks:
+  - name: check if uninstall-script exists
+    stat:
+      path: /usr/local/bin/k3s-uninstall.sh
+    register: uninstall_script
+
+  - name: run uninstall script
+    become: true
+    shell: "/usr/local/bin/k3s-uninstall.sh"
+    when: uninstall_script.stat.exists
+
+  - name: get k3s pid
+    shell: "pgrep k3s"
+    register: k3s_pid
+    when: not uninstall_script.stat.exists
+
+  - name: kill k3s-process
+    shell: "kill {{ item }}"
+    with_items: "{{ k3s_pid.stdout_lines }}"
+    when: not uninstall_script.stat.exists
+
+  - wait_for:
+      path: "/proc/{{ item }}/status"
+      state: absent
+    with_items: "{{ k3s_pid.stdout_lines }}"
+    ignore_errors: true
+    register: killed_k3s
+    when: not uninstall_script.stat.exists
+
+  - name: force kill stuck processes
+    shell: "kill -9 {{ item }}"
+    with_items: "{{ killed_k3s.results | select('failed') | map(attribute='item') | list }}"
+    when: not uninstall_script.stat.exists

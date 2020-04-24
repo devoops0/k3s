@@ -1,0 +1,30 @@
+---
+- hosts: all
+  tasks:
+  - name: check if k3s is already running
+    shell: "pgrep k3s || echo "
+    register: k3s_not_running
+    changed_when: k3s_not_running.stdout != ""
+
+  - name: start cluster on master
+    shell: "curl -sfL https://get.k3s.io | sh -"
+    when: 
+    - "'masters' in group_names"
+    - "k3s_not_running.rc == 0"
+
+  - name: obtain node-token from master
+    become: true
+    shell: cat /var/lib/rancher/k3s/server/node-token
+    register: node_token
+    when:
+    - "'masters' in group_names"
+    - "k3s_not_running.rc == 0"
+
+  - debug:
+      var: node_token
+
+  - name: let agents join the cluster
+    shell: "curl -sfL https://get.k3s.io | K3S_URL='https://odroid-master:6443' K3S_TOKEN={{ hostvars['odroid-master'].node_token.stdout }} sh -"
+    when:
+    - "'workers' in group_names"
+    - "k3s_not_running.rc == 0"

@@ -1,0 +1,11 @@
+all:
+  vars:
+    ansible_user: phil
+    ansible_python_interpreter: /usr/bin/python3
+  children:
+    masters:
+      hosts:
+        odroid-master:
+    workers:
+      hosts:
+        odroid-worker-[01:05]:

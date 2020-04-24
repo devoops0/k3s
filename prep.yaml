@@ -1,0 +1,17 @@
+---
+- hosts: all
+  tasks:
+  - name: update packages
+    become: true
+    apt:
+      upgrade: yes
+      update_cache: yes
+      cache_valid_time: 86400 # one day
+
+  - name: install needed packages
+    become: true
+    apt:
+      state: present
+      pkg:
+        - vim
+        - curl
