@@ -1,2 +1,4 @@
 ansible/*
 ansible.cfg
+*/prometheus/
+*/prometheus/*
