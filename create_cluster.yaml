@@ -20,8 +20,9 @@
     - "'masters' in group_names"
     - "k3s_not_running.rc == 0"
 
-  - debug:
-      var: node_token
+  # uncomment to print the node-token during setup
+  # - debug:
+  #     var: node_token
 
   - name: let agents join the cluster
     shell: "curl -sfL https://get.k3s.io | K3S_URL='https://odroid-master:6443' K3S_TOKEN={{ hostvars['odroid-master'].node_token.stdout }} sh -"
