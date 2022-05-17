@@ -11,7 +11,7 @@ So use this at your own risk!
 $ cd setup
 $ # update inventory to your needs
 $ ansible-playbook -i inventory.yaml prep.yaml 
-$ ansible-playbook -i invenotry.yaml create_cluster.yaml
+$ ansible-playbook -i inventory.yaml create_cluster.yaml
 ```
 
 To connect to the cluster, copy the kube-config from the k3s-master to your local machine.  
